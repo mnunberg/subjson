@@ -510,7 +510,7 @@ Match::exec_match(const char *value, size_t nvalue, const Path *pth, jsonsl_t js
     }
 }
 
-Match::Match()
+Match::Match() : BaseMatch()
 {
     clear();
 }

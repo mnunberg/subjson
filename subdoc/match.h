@@ -23,15 +23,11 @@
 
 namespace Subdoc {
 
-/** Structure describing a match for an item */
-class Match {
+class BaseMatch {
 public:
     /**The JSON type for the result (i.e. jsonsl_type_t). If the match itself
      * is not found, this will contain the innermost _parent_ type. */
     uint32_t type;
-
-    /**Error status (jsonsl_error_t) */
-    uint16_t status;
 
     /** result of the match. jsonsl_jpr_match_t */
     int16_t matchres;
@@ -103,6 +99,24 @@ public:
      */
     unsigned char immediate_parent_found;
 
+    /**
+     * Deepest match found. If the match was completely found, then this
+     * points to the actual match. Otherwise, this is one of the parents.
+     */
+    Loc loc_deepest;
+
+    /**Location desribing the key for the item. Valid only if #has_key is true*/
+    Loc loc_key;
+
+    BaseMatch() { memset(this, 0, sizeof *this); }
+};
+
+/** Structure describing a match for an item */
+class Match : public BaseMatch {
+public:
+    /**Error status (jsonsl_error_t) */
+    uint16_t status;
+
     /**Request flag; indicating whether the last child position should be
      * returned inside the `loc_key` member. Note that the position will
      * be indicated in the `loc_key`'s _length_ field, and its `at` field
@@ -127,15 +141,6 @@ public:
     /**If 'ensure_unique' is true, set to true if the value of #ensure_unique
      * already exists */
     unsigned char unique_item_found;
-
-    /**
-     * Deepest match found. If the match was completely found, then this
-     * points to the actual match. Otherwise, this is one of the parents.
-     */
-    Loc loc_deepest;
-
-    /**Location desribing the key for the item. Valid only if #has_key is true*/
-    Loc loc_key;
 
     /**If set to true, will also descend each child element to ensure that
      * the contents here are unique. Will set an error code accordingly, if
