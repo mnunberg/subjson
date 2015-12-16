@@ -109,7 +109,9 @@ public:
     /**Location desribing the key for the item. Valid only if #has_key is true*/
     Loc loc_key;
 
-    BaseMatch() { memset(this, 0, sizeof *this); }
+    void clear() { memset(this, 0, sizeof *this); }
+
+    BaseMatch() { clear(); }
 };
 
 /** Structure describing a match for an item */
