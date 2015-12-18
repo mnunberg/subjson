@@ -13,7 +13,7 @@ endif(COUCHBASE_SERVER_BUILD)
 
 if((CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     AND NOT COUCHBASE_SERVER_BUILD)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -pedantic")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -pedantic -Wsign-compare")
 endif()
 
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
@@ -31,6 +31,9 @@ ADD_LIBRARY(subjson ${SUBJSON_SRC})
 TARGET_LINK_LIBRARIES(subjson ${EXTRA_LIBS})
 ADD_EXECUTABLE(bench bench.cc contrib/cliopts/cliopts.c)
 TARGET_LINK_LIBRARIES(bench subjson)
+
+ADD_EXECUTABLE(multi multi.cc subdoc/multiget.cc contrib/cliopts/cliopts.c)
+TARGET_LINK_LIBRARIES(multi subjson)
 
 IF(EXISTS ${SUBJSON_GTEST} OR EXISTS ${gtest_SOURCE_DIR})
   ENABLE_TESTING()

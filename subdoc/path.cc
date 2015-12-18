@@ -307,3 +307,34 @@ Path::clear() {
     m_cached.insert(m_cached.end(), m_used.begin(), m_used.end());
     m_used.clear();
 }
+
+bool
+PathComponentInfo::is_child_of(const PathComponentInfo& other) const
+{
+    if (size() < other.size()) {
+        return false;
+    }
+    for (size_t ii = 0; ii < other.size(); ii++) {
+        auto& self_c = components[ii];
+        auto& other_c = other.components[ii];
+        if (!PathComponentInfo::component_equal(self_c, other_c)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool
+PathComponentInfo::is_related(const PathComponentInfo& other) const
+{
+    // Determine if this path is related to the other path, this means
+    // it's either the same or a parent or a child of the other path
+    for (size_t ii = 0; ii < size(); ii++) {
+        if (!PathComponentInfo::component_equal(
+            components[ii], other.components[ii])) {
+            return false;
+        }
+    }
+    return true;
+}

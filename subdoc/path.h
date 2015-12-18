@@ -61,6 +61,41 @@ public:
     typedef PathComponent *iterator;
     iterator begin() const { return components; }
     iterator end() const { return components + size(); }
+
+    bool is_related(const PathComponentInfo& other) const;
+    bool is_child_of(const PathComponentInfo& other) const;
+    bool is_parent_of(const PathComponentInfo& other) const {
+        return other.is_child_of(*this);
+    }
+
+    static bool
+    component_equal(const PathComponent& a, const PathComponent& b) {
+        if (a.ptype != b.ptype) {
+            return false;
+        }
+
+        if (a.ptype == JSONSL_PATH_NUMERIC) {
+            if (a.is_neg != b.is_neg) {
+                return false;
+            }
+
+            if (a.is_neg) {
+                return true; //idx value is ignored
+            }
+
+            if (a.idx != b.idx) {
+                return false;
+            }
+        } else {
+            if (a.len != b.len) {
+                return false;
+            }
+            if (strncmp(a.pstr, b.pstr, a.len)) {
+                return false;
+            }
+        }
+        return true;
+    }
 };
 
 namespace Subdoc {
@@ -106,7 +141,16 @@ public:
     typedef PathComponentInfo CompInfo;
 
     Path();
+    Path(const Path& other) { *this = other; }
+
+    Path& operator=(const Path& other) {
+        *static_cast<PathComponentInfo*>(this) = other;
+        has_negix = other.has_negix;
+        components = components_s;
+        return *this;
+    }
     ~Path();
+
     void clear();
     int parse(const char *, size_t);
     int parse(const char *s) { return parse(s, strlen(s)); }
@@ -115,6 +159,17 @@ public:
     Component components_s[Limits::PATH_COMPONENTS_ALLOC];
     jsonsl_error_t add_array_index(long ixnum);
     bool has_negix; /* True if there is a negative array index in the path */
+
+    static Error rv_to_error(int rv) {
+        if (rv == 0) {
+            return Error::SUCCESS;
+        } else if (rv == JSONSL_ERROR_LEVELS_EXCEEDED) {
+            return Error::PATH_E2BIG;
+        } else {
+            return Error::PATH_EINVAL;
+        }
+    }
+
 private:
     inline const char * convert_escaped(const char *src, size_t &len);
     inline int add_num_component(const char *component, size_t len);
